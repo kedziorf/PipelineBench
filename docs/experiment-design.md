@@ -37,10 +37,11 @@ Inside each run directory:
 
 - `metadata.json` records environment and tool versions.
 - `processed/results.csv` stores measured run rows.
+- `processed/summary.csv` and `processed/summary.json` store aggregate statistics.
 - `raw/results.json` stores the same rows as JSON.
 - `logs/` stores Jenkins console logs.
 
-For convenience, the latest CSV, JSON, and metadata are also copied to `results/processed/results.csv`, `results/raw/results.json`, and `results/metadata.json`.
+For convenience, the latest CSV, JSON, summary, and metadata files are also copied to `results/processed/`, `results/raw/`, and `results/metadata.json`.
 
 ## Adding a Future Provider
 

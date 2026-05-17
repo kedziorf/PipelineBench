@@ -6,9 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pipelinebench.config import PipelineBenchConfig
-from pipelinebench.exporters import ensure_logs_dir, export_csv, export_json
+from pipelinebench.exporters import ensure_logs_dir, export_csv, export_json, export_summary_csv, export_summary_json
 from pipelinebench.metadata import create_experiment_metadata, make_experiment_id, write_metadata
-from pipelinebench.metrics import BenchmarkResult, PrometheusClient, utc_now
+from pipelinebench.metrics import BenchmarkResult, PrometheusClient, summarize_results, utc_now
 from pipelinebench.metrics.kubernetes import delete_completed_benchmark_pods
 from pipelinebench.providers import create_provider
 
@@ -66,6 +66,12 @@ class Experiment:
             export_json(results, output_dir / "raw" / "results.json")
             if self.config.results.latest_alias:
                 export_json(results, self.config.results.output_dir / "raw" / "results.json")
+        summary = summarize_results(results)
+        export_summary_csv(summary, output_dir / "processed" / "summary.csv")
+        export_summary_json(summary, output_dir / "processed" / "summary.json")
+        if self.config.results.latest_alias:
+            export_summary_csv(summary, self.config.results.output_dir / "processed" / "summary.csv")
+            export_summary_json(summary, self.config.results.output_dir / "processed" / "summary.json")
         if self.config.results.latest_alias:
             write_metadata(metadata, self.config.results.output_dir / "metadata.json")
         if self.config.experiment.cleanup_between_tools:

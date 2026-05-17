@@ -17,6 +17,26 @@ PipelineBench exports these fields:
 - `logs_path`
 - `error_message`
 
+## Summary Outputs
+
+After each benchmark, PipelineBench writes aggregate summary files:
+
+- `processed/summary.csv`
+- `processed/summary.json`
+
+The summary includes:
+
+- total runs
+- successful runs
+- failed runs
+- success rate
+- mean, median, min, max, and standard deviation for duration
+- mean average CPU usage
+- peak max CPU usage
+- mean average memory usage
+- peak max memory usage
+- total pod restarts
+
 ## Prometheus Queries
 
 The runner queries namespace-level metrics over each pipeline run window:
