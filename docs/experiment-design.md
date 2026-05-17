@@ -41,7 +41,7 @@ Inside each run directory:
 - `raw/results.json` stores the same rows as JSON.
 - `logs/` stores Jenkins console logs.
 
-For convenience, the latest CSV, JSON, summary, and metadata files are also copied to `results/processed/`, `results/raw/`, and `results/metadata.json`.
+The default configuration keeps outputs only inside timestamped run directories. Set `results.latest_alias: true` in `experiment-runner/config.yaml` only if you want top-level convenience copies for the latest run.
 
 ## Adding a Future Provider
 

@@ -9,18 +9,7 @@ __pycache__/
 htmlcov/
 .tools/
 
-results/raw/*
-results/processed/*
-results/logs/*
-results/charts/*
 results/runs/*
-results/metadata.json
-results/processed/summary.csv
-results/processed/summary.json
-!results/raw/.gitkeep
-!results/processed/.gitkeep
-!results/logs/.gitkeep
-!results/charts/.gitkeep
 !results/runs/.gitkeep
 
 *.log

@@ -31,7 +31,7 @@ ci_systems:
 results:
   output_dir: "../results"
   use_run_directories: true
-  latest_alias: true
+  latest_alias: false
   export_csv: true
   export_json: true
   export_logs: true

@@ -48,12 +48,8 @@ The `scripts/check-tools.sh` script verifies required tools and prints installat
 Benchmark results are written to:
 
 - `results/runs/<timestamp>_<tool>/`
-- `results/processed/results.csv`
-- `results/processed/summary.csv`
-- `results/processed/summary.json`
-- `results/raw/results.json`
 
-Each run directory includes `metadata.json` with local tool versions and cluster context, plus run-specific logs. The top-level CSV, JSON, and metadata files are convenience aliases for the latest run.
+Each run directory includes `metadata.json` with local tool versions and cluster context, `processed/` summaries, `raw/` JSON, and run-specific logs.
 
 ## Current MVP Scope
 
