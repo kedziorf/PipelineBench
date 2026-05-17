@@ -1,6 +1,6 @@
 # PipelineBench
 
-PipelineBench is a local research framework for comparing CI/CD pipeline tools in a controlled Kubernetes environment. The current MVP benchmarks Jenkins and includes Tekton as the first Kubernetes-native comparison provider.
+PipelineBench is a local research framework for comparing CI/CD pipeline tools in a controlled Kubernetes environment. The current MVP benchmarks Jenkins, Tekton, and a local CircleCI-compatible Kubernetes execution model.
 
 The framework is designed for WSL2/Linux-compatible tooling and runs fully locally with Docker, kind, kubectl, Helm, Python, and Prometheus. It does not use public cloud infrastructure.
 
@@ -36,6 +36,13 @@ make install-tekton
 make run-tekton
 ```
 
+To run the local CircleCI-compatible provider after the cluster and monitoring stack are ready:
+
+```bash
+make install-circleci
+make run-circleci
+```
+
 ## Requirements
 
 Install these tools on your WSL2 Linux distribution:
@@ -66,20 +73,21 @@ Implemented:
 - Monitoring install script for Prometheus, kube-state-metrics, and metrics-server
 - Jenkins installation script using Helm
 - Tekton installation script using upstream Tekton Pipelines manifests
+- CircleCI-compatible local Kubernetes Job provider
 - Deterministic Python sample workload
 - Jenkins pipeline definition
 - Tekton pipeline definition
+- CircleCI pipeline definition
 - Python experiment runner with provider abstraction
 - Jenkins provider
 - Tekton provider
+- CircleCI provider
 - Prometheus metric client
 - CSV, JSON, and log export
 
 Not implemented yet:
 
 - GitLab Runner provider
-- GitHub Actions self-hosted runner provider
-- CircleCI-compatible local runner
 - Statistical analysis dashboards
 
-See `docs/` for architecture, methodology, metrics, Tekton, and experiment design notes.
+See `docs/` for architecture, methodology, metrics, Tekton, CircleCI, and experiment design notes.

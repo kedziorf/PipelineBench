@@ -3,8 +3,8 @@ set -euo pipefail
 
 TOOL="${1:-jenkins}"
 
-if [ "$TOOL" != "jenkins" ] && [ "$TOOL" != "tekton" ]; then
-  echo "Supported providers: jenkins, tekton"
+if [ "$TOOL" != "jenkins" ] && [ "$TOOL" != "tekton" ] && [ "$TOOL" != "circleci" ]; then
+  echo "Supported providers: jenkins, tekton, circleci"
   exit 1
 fi
 

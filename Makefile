@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 export PATH := $(CURDIR)/.tools/bin:$(PATH)
 
 .PHONY: check-tools create-cluster delete-cluster install-monitoring install-jenkins run-jenkins run-benchmark clean clean-all
-.PHONY: install-tekton run-tekton
+.PHONY: install-tekton run-tekton install-circleci run-circleci
 
 check-tools:
 	./scripts/check-tools.sh
@@ -22,11 +22,17 @@ install-jenkins:
 install-tekton:
 	./scripts/install-tekton.sh
 
+install-circleci:
+	./scripts/install-circleci.sh
+
 run-jenkins:
 	./scripts/run-benchmark.sh jenkins
 
 run-tekton:
 	./scripts/run-benchmark.sh tekton
+
+run-circleci:
+	./scripts/run-benchmark.sh circleci
 
 run-benchmark:
 	./scripts/run-benchmark.sh jenkins

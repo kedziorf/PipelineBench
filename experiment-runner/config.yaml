@@ -37,6 +37,13 @@ ci_systems:
       - "pipelinebench-tekton"
     provider: "tekton"
     deployment_method: "manifests"
+  - name: "circleci"
+    enabled: true
+    namespace: "pipelinebench-circleci"
+    metrics_namespaces:
+      - "pipelinebench-circleci"
+    provider: "circleci"
+    deployment_method: "local-kubernetes-job"
 
 results:
   output_dir: "../results"

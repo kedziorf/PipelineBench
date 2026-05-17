@@ -8,12 +8,11 @@ Implemented provider:
 
 - Jenkins
 - Tekton
+- CircleCI-compatible local Kubernetes Job provider
 
 Planned providers:
 
 - GitLab Runner
-- GitHub Actions self-hosted runner
-- CircleCI-compatible local runner or placeholder
 
 ## Local Run Procedure
 
@@ -32,6 +31,13 @@ make install-tekton
 make run-tekton
 ```
 
+The local CircleCI-compatible provider can also be tested after monitoring is installed:
+
+```bash
+make install-circleci
+make run-circleci
+```
+
 ## Result Directories
 
 Each benchmark execution writes to a unique directory:
@@ -46,7 +52,7 @@ Inside each run directory:
 - `processed/results.csv` stores measured run rows.
 - `processed/summary.csv` and `processed/summary.json` store aggregate statistics.
 - `raw/results.json` stores the same rows as JSON.
-- `logs/` stores Jenkins console logs.
+- `logs/` stores provider run logs.
 
 The default configuration keeps outputs only inside timestamped run directories. Set `results.latest_alias: true` in `experiment-runner/config.yaml` only if you want top-level convenience copies for the latest run.
 
