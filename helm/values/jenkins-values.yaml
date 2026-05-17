@@ -1,0 +1,33 @@
+controller:
+  serviceType: NodePort
+  nodePort: 30080
+  numExecutors: 0
+  admin:
+    username: admin
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - job-dsl
+    - blueocean
+  JCasC:
+    defaultConfig: true
+
+agent:
+  enabled: false
+  namespace: pipelinebench-jenkins
+  serviceAccount: pipelinebench-jenkins
+  podName: default
+
+persistence:
+  enabled: true
+  size: 8Gi
+
+rbac:
+  create: true
+  readSecrets: true
+
+serviceAccount:
+  create: false
+  name: pipelinebench-jenkins

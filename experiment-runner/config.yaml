@@ -1,0 +1,37 @@
+experiment:
+  name: "local-sequential-cicd-benchmark"
+  runs_per_tool: 5
+  warmup_runs: 1
+  timeout_seconds: 1800
+  cleanup_between_runs: true
+  cleanup_between_tools: true
+
+cluster:
+  type: "kind"
+  name: "pipelinebench-local"
+  namespace_prefix: "pipelinebench"
+
+monitoring:
+  prometheus_url: "http://localhost:9090"
+  scrape_interval_seconds: 5
+  metrics_window_seconds: 10
+
+workload:
+  name: "sample-app"
+  path: "../workloads/sample-app"
+  docker_image_name: "pipelinebench/sample-app"
+
+ci_systems:
+  - name: "jenkins"
+    enabled: true
+    namespace: "pipelinebench-jenkins"
+    provider: "jenkins"
+    deployment_method: "helm"
+
+results:
+  output_dir: "../results"
+  use_run_directories: true
+  latest_alias: true
+  export_csv: true
+  export_json: true
+  export_logs: true

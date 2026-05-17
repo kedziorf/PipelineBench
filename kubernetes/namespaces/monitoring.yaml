@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pipelinebench-monitoring
+  labels:
+    app.kubernetes.io/name: pipelinebench-monitoring
+    pipelinebench.io/component: monitoring

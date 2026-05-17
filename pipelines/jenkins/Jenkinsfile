@@ -1,0 +1,105 @@
+pipeline {
+  agent {
+    kubernetes {
+      defaultContainer 'python'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    pipelinebench.io/workload: sample-app
+spec:
+  serviceAccountName: pipelinebench-jenkins
+  restartPolicy: Never
+  containers:
+    - name: python
+      image: python:3.12-slim
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/requirements.txt
+          subPath: requirements.txt
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/src/app.py
+          subPath: app.py
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/tests/test_app.py
+          subPath: test_app.py
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/benchmark/cpu_task.py
+          subPath: cpu_task.py
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/benchmark/memory_task.py
+          subPath: memory_task.py
+        - name: sample-workload
+          mountPath: /workspace/workloads/sample-app/Dockerfile
+          subPath: Dockerfile
+  volumes:
+    - name: sample-workload
+      configMap:
+        name: pipelinebench-sample-workload
+"""
+    }
+  }
+
+  parameters {
+    string(name: 'RUN_ID', defaultValue: '0', description: 'PipelineBench run id')
+  }
+
+  environment {
+    SAMPLE_APP_DIR = '/workspace/workloads/sample-app'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        echo "PipelineBench workload mounted from Kubernetes ConfigMap. RUN_ID=${params.RUN_ID}"
+        sh 'find /workspace/workloads/sample-app -maxdepth 3 -type f | sort'
+      }
+    }
+
+    stage('Install Dependencies') {
+      steps {
+        sh 'python3 -m pip install --user -r ${SAMPLE_APP_DIR}/requirements.txt'
+      }
+    }
+
+    stage('Unit Tests') {
+      steps {
+        sh 'PYTHONPATH=${SAMPLE_APP_DIR} python3 -m unittest discover -s ${SAMPLE_APP_DIR}/tests'
+      }
+    }
+
+    stage('CPU Benchmark') {
+      steps {
+        sh 'python3 ${SAMPLE_APP_DIR}/benchmark/cpu_task.py'
+      }
+    }
+
+    stage('Memory Benchmark') {
+      steps {
+        sh 'python3 ${SAMPLE_APP_DIR}/benchmark/memory_task.py'
+      }
+    }
+
+    stage('Docker Build') {
+      steps {
+        sh '''
+          if command -v docker >/dev/null 2>&1; then
+            docker build -t pipelinebench/sample-app:jenkins-${RUN_ID} ${SAMPLE_APP_DIR}
+          else
+            echo "Docker CLI is not available in this Jenkins agent; skipping image build."
+          fi
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      echo "PipelineBench Jenkins run ${params.RUN_ID} finished with ${currentBuild.currentResult}"
+    }
+  }
+}

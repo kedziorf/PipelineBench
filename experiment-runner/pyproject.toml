@@ -1,0 +1,12 @@
+[project]
+name = "pipelinebench-runner"
+version = "0.1.0"
+description = "Local CI/CD pipeline benchmark runner"
+requires-python = ">=3.12"
+dependencies = [
+  "PyYAML>=6.0.2",
+  "requests>=2.32.3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
