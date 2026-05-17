@@ -25,8 +25,18 @@ ci_systems:
   - name: "jenkins"
     enabled: true
     namespace: "pipelinebench-jenkins"
+    metrics_namespaces:
+      - "pipelinebench-jenkins"
     provider: "jenkins"
     deployment_method: "helm"
+  - name: "tekton"
+    enabled: true
+    namespace: "pipelinebench-tekton"
+    metrics_namespaces:
+      - "tekton-pipelines"
+      - "pipelinebench-tekton"
+    provider: "tekton"
+    deployment_method: "manifests"
 
 results:
   output_dir: "../results"

@@ -1,0 +1,146 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: pipelinebench-sample
+  namespace: pipelinebench-tekton
+spec:
+  params:
+    - name: run-id
+      type: string
+      default: "0"
+  tasks:
+    - name: unit-tests
+      taskRef:
+        name: pipelinebench-unit-tests
+      params:
+        - name: run-id
+          value: "$(params.run-id)"
+    - name: cpu-benchmark
+      runAfter:
+        - unit-tests
+      taskRef:
+        name: pipelinebench-cpu-benchmark
+    - name: memory-benchmark
+      runAfter:
+        - cpu-benchmark
+      taskRef:
+        name: pipelinebench-memory-benchmark
+    - name: docker-build-check
+      runAfter:
+        - memory-benchmark
+      taskRef:
+        name: pipelinebench-docker-build-check
+      params:
+        - name: run-id
+          value: "$(params.run-id)"
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pipelinebench-unit-tests
+  namespace: pipelinebench-tekton
+spec:
+  params:
+    - name: run-id
+      type: string
+  volumes:
+    - name: sample-workload
+      configMap:
+        name: pipelinebench-sample-workload
+  steps:
+    - name: tests
+      image: python:3.12-slim
+      volumeMounts:
+        - name: sample-workload
+          mountPath: /var/pipelinebench-workload
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+        echo "PipelineBench Tekton unit test run $(params.run-id)"
+        mkdir -p /workspace/workloads/sample-app/src /workspace/workloads/sample-app/tests
+        cp /var/pipelinebench-workload/requirements.txt /workspace/workloads/sample-app/requirements.txt
+        cp /var/pipelinebench-workload/app.py /workspace/workloads/sample-app/src/app.py
+        cp /var/pipelinebench-workload/test_app.py /workspace/workloads/sample-app/tests/test_app.py
+        python3 -m pip install --user -r /workspace/workloads/sample-app/requirements.txt
+        PYTHONPATH=/workspace/workloads/sample-app python3 -m unittest discover -s /workspace/workloads/sample-app/tests
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pipelinebench-cpu-benchmark
+  namespace: pipelinebench-tekton
+spec:
+  volumes:
+    - name: sample-workload
+      configMap:
+        name: pipelinebench-sample-workload
+  steps:
+    - name: cpu
+      image: python:3.12-slim
+      volumeMounts:
+        - name: sample-workload
+          mountPath: /var/pipelinebench-workload
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+        mkdir -p /workspace/workloads/sample-app/benchmark
+        cp /var/pipelinebench-workload/cpu_task.py /workspace/workloads/sample-app/benchmark/cpu_task.py
+        python3 /workspace/workloads/sample-app/benchmark/cpu_task.py
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pipelinebench-memory-benchmark
+  namespace: pipelinebench-tekton
+spec:
+  volumes:
+    - name: sample-workload
+      configMap:
+        name: pipelinebench-sample-workload
+  steps:
+    - name: memory
+      image: python:3.12-slim
+      volumeMounts:
+        - name: sample-workload
+          mountPath: /var/pipelinebench-workload
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+        mkdir -p /workspace/workloads/sample-app/benchmark
+        cp /var/pipelinebench-workload/memory_task.py /workspace/workloads/sample-app/benchmark/memory_task.py
+        python3 /workspace/workloads/sample-app/benchmark/memory_task.py
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pipelinebench-docker-build-check
+  namespace: pipelinebench-tekton
+spec:
+  params:
+    - name: run-id
+      type: string
+  volumes:
+    - name: sample-workload
+      configMap:
+        name: pipelinebench-sample-workload
+  steps:
+    - name: docker-build-check
+      image: python:3.12-slim
+      volumeMounts:
+        - name: sample-workload
+          mountPath: /var/pipelinebench-workload
+      script: |
+        #!/usr/bin/env sh
+        set -eu
+        mkdir -p /workspace/workloads/sample-app/src /workspace/workloads/sample-app/benchmark /workspace/workloads/sample-app/tests
+        cp /var/pipelinebench-workload/Dockerfile /workspace/workloads/sample-app/Dockerfile
+        cp /var/pipelinebench-workload/requirements.txt /workspace/workloads/sample-app/requirements.txt
+        cp /var/pipelinebench-workload/app.py /workspace/workloads/sample-app/src/app.py
+        cp /var/pipelinebench-workload/cpu_task.py /workspace/workloads/sample-app/benchmark/cpu_task.py
+        cp /var/pipelinebench-workload/memory_task.py /workspace/workloads/sample-app/benchmark/memory_task.py
+        cp /var/pipelinebench-workload/test_app.py /workspace/workloads/sample-app/tests/test_app.py
+        if command -v docker >/dev/null 2>&1; then
+          docker build -t pipelinebench/sample-app:tekton-$(params.run-id) /workspace/workloads/sample-app
+        else
+          echo "Docker CLI is not available in this Tekton step; skipping image build."
+        fi

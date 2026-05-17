@@ -62,7 +62,7 @@ def create_experiment_metadata(
             _run_text(["kubectl", "version", "--client"], "kubectl"),
             _run_text(["helm", "version", "--short"], "helm"),
             _run_text(["kubectl", "version", "-o", "json"], "kubernetes"),
-            _run_text(["helm", "status", "pipelinebench-jenkins", "-n", system.namespace], "jenkins_helm_release"),
+            *_provider_versions(system),
         ],
     )
 
@@ -96,3 +96,25 @@ def _git_dirty() -> bool | None:
     if status.error:
         return None
     return bool(status.version)
+
+
+def _provider_versions(system: CISystemSettings) -> list[ToolVersion]:
+    if system.provider == "jenkins":
+        return [_run_text(["helm", "status", "pipelinebench-jenkins", "-n", system.namespace], "jenkins_helm_release")]
+    if system.provider == "tekton":
+        return [
+            _run_text(
+                [
+                    "kubectl",
+                    "-n",
+                    "tekton-pipelines",
+                    "get",
+                    "deployment",
+                    "tekton-pipelines-controller",
+                    "-o",
+                    "jsonpath={.metadata.labels.app\\.kubernetes\\.io/version}",
+                ],
+                "tekton_pipelines_version",
+            )
+        ]
+    return []

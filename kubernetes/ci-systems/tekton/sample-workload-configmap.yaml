@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipelinebench-sample-workload
+  namespace: pipelinebench-tekton
+data:
+  requirements.txt: |
+    # No external runtime dependencies are required for the MVP workload.
+  app.py: |
+    from __future__ import annotations
+
+
+    def normalize_text(value: str) -> str:
+        return " ".join(value.strip().lower().split())
+
+
+    def deterministic_score(values: list[int]) -> int:
+        return sum((index + 1) * value for index, value in enumerate(values))
+  test_app.py: |
+    import unittest
+
+    from src.app import deterministic_score, normalize_text
+
+
+    class AppTestCase(unittest.TestCase):
+        def test_normalize_text(self) -> None:
+            self.assertEqual(normalize_text("  PipelineBench   SAMPLE app "), "pipelinebench sample app")
+
+        def test_deterministic_score(self) -> None:
+            self.assertEqual(deterministic_score([3, 1, 4, 1, 5]), 46)
+
+
+    if __name__ == "__main__":
+        unittest.main()
+  cpu_task.py: |
+    from __future__ import annotations
+
+    import hashlib
+    import time
+
+
+    def run_cpu_task(iterations: int = 150_000) -> str:
+        digest = b"pipelinebench"
+        for index in range(iterations):
+            digest = hashlib.sha256(digest + index.to_bytes(8, "little")).digest()
+        return digest.hex()
+
+
+    if __name__ == "__main__":
+        started = time.perf_counter()
+        digest = run_cpu_task()
+        duration = time.perf_counter() - started
+        print(f"cpu_task_digest={digest}")
+        print(f"cpu_task_duration_seconds={duration:.6f}")
+  memory_task.py: |
+    from __future__ import annotations
+
+    import time
+
+
+    def run_memory_task(block_count: int = 32, block_size: int = 256_000) -> int:
+        blocks = [bytearray((index % 251 for _ in range(block_size))) for index in range(block_count)]
+        checksum = sum(block[0] for block in blocks) + sum(block[-1] for block in blocks)
+        time.sleep(0.2)
+        return checksum
+
+
+    if __name__ == "__main__":
+        started = time.perf_counter()
+        checksum = run_memory_task()
+        duration = time.perf_counter() - started
+        print(f"memory_task_checksum={checksum}")
+        print(f"memory_task_duration_seconds={duration:.6f}")
+  Dockerfile: |
+    FROM python:3.12-slim
+    WORKDIR /app
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir -r requirements.txt
+    COPY src/ src/
+    COPY benchmark/ benchmark/
+    COPY tests/ tests/
+    CMD ["python", "-m", "unittest", "discover", "-s", "tests"]

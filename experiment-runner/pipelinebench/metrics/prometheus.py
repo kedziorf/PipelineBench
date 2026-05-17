@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -25,13 +26,17 @@ class PrometheusClient:
         self.step_seconds = step_seconds
 
     def collect_namespace_metrics(self, namespace: str, start: datetime, end: datetime) -> PrometheusMetrics:
+        return self.collect_namespaces_metrics([namespace], start, end)
+
+    def collect_namespaces_metrics(self, namespaces: list[str], start: datetime, end: datetime) -> PrometheusMetrics:
+        namespace_selector = _namespace_selector(namespaces)
         cpu_values = self._query_range_values(
-            f'sum(rate(container_cpu_usage_seconds_total{{namespace="{namespace}",container!="POD",container!=""}}[1m]))',
+            f'sum(rate(container_cpu_usage_seconds_total{{{namespace_selector},container!="POD",container!=""}}[1m]))',
             start,
             end,
         )
         memory_values = self._query_range_values(
-            f'sum(container_memory_working_set_bytes{{namespace="{namespace}",container!="POD",container!=""}})',
+            f'sum(container_memory_working_set_bytes{{{namespace_selector},container!="POD",container!=""}})',
             start,
             end,
         )
@@ -43,7 +48,7 @@ class PrometheusClient:
             avg_memory_usage=_average(memory_values),
             max_memory_usage=max(memory_values) if memory_values else None,
             pod_restart_count=self._query_instant_scalar(
-                f'sum(increase(kube_pod_container_status_restarts_total{{namespace="{namespace}"}}[{duration_seconds}s]))',
+                f'sum(increase(kube_pod_container_status_restarts_total{{{namespace_selector}}}[{duration_seconds}s]))',
                 end,
             ),
         )
@@ -99,3 +104,12 @@ def _average(values: list[float]) -> float | None:
     if not values:
         return None
     return sum(values) / len(values)
+
+
+def _namespace_selector(namespaces: list[str]) -> str:
+    if not namespaces:
+        raise ValueError("At least one namespace is required for Prometheus collection")
+    if len(namespaces) == 1:
+        return f'namespace="{namespaces[0]}"'
+    pattern = "|".join(re.escape(namespace).replace("\\-", "-") for namespace in namespaces)
+    return f'namespace=~"^({pattern})$"'

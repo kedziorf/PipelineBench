@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,7 @@ class CISystemSettings:
     namespace: str
     provider: str
     deployment_method: str
+    metrics_namespaces: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

@@ -22,4 +22,4 @@ The MVP uses `kube-prometheus-stack` plus Metrics Server. Prometheus is the prim
 
 Providers implement `CICDProvider` in `experiment-runner/pipelinebench/providers/base.py`.
 
-Only Jenkins is implemented in the MVP. Future providers should add a class implementing the same methods, then register it in `providers/__init__.py`.
+Jenkins and Tekton are implemented in the MVP. Future providers should add a class implementing the same methods, then register it in `providers/__init__.py`.

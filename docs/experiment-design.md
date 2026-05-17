@@ -7,13 +7,13 @@ The intended full experiment compares multiple CI/CD systems using a fixed workl
 Implemented provider:
 
 - Jenkins
+- Tekton
 
 Planned providers:
 
 - GitLab Runner
 - GitHub Actions self-hosted runner
 - CircleCI-compatible local runner or placeholder
-- Tekton
 
 ## Local Run Procedure
 
@@ -23,6 +23,13 @@ make create-cluster
 make install-monitoring
 make install-jenkins
 make run-jenkins
+```
+
+Tekton can be tested after monitoring is installed:
+
+```bash
+make install-tekton
+make run-tekton
 ```
 
 ## Result Directories

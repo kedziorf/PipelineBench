@@ -48,3 +48,5 @@ The runner queries namespace-level metrics over each pipeline run window:
 Metric availability depends on the installed monitoring chart and Kubernetes distribution. If a query returns no data, the runner exports `null` for that field and logs a warning.
 
 CPU and memory are collected with Prometheus range queries from the recorded pipeline start time to end time. Restart counts use a windowed `increase(...)` query sized to the actual run duration.
+
+Some providers use more than one namespace. Jenkins uses one namespace for controller and agents. Tekton uses `tekton-pipelines` for controllers and `pipelinebench-tekton` for benchmark `PipelineRun` pods, so the runner supports provider-specific `metrics_namespaces` and aggregates them into one row.

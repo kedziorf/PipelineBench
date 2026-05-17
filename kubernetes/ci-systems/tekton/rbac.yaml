@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pipelinebench-tekton
+  namespace: pipelinebench-tekton
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pipelinebench-tekton
+  namespace: pipelinebench-tekton
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelineruns", "taskruns"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pipelinebench-tekton
+  namespace: pipelinebench-tekton
+subjects:
+  - kind: ServiceAccount
+    name: pipelinebench-tekton
+    namespace: pipelinebench-tekton
+roleRef:
+  kind: Role
+  name: pipelinebench-tekton
+  apiGroup: rbac.authorization.k8s.io

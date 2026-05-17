@@ -49,11 +49,11 @@ class Experiment:
 
         for warmup_id in range(1, self.config.experiment.warmup_runs + 1):
             LOGGER.info("Starting warmup run %s for %s", warmup_id, self.tool_name)
-            self._run_once(provider, prometheus, system.namespace, logs_dir, -warmup_id, measured=False)
+            self._run_once(provider, prometheus, self._metrics_namespaces(), logs_dir, -warmup_id, measured=False)
 
         for run_id in range(1, self.config.experiment.runs_per_tool + 1):
             LOGGER.info("Starting measured run %s for %s", run_id, self.tool_name)
-            result = self._run_once(provider, prometheus, system.namespace, logs_dir, run_id, measured=True)
+            result = self._run_once(provider, prometheus, self._metrics_namespaces(), logs_dir, run_id, measured=True)
             results.append(result)
             if self.config.experiment.cleanup_between_runs:
                 delete_completed_benchmark_pods(system.namespace)
@@ -83,7 +83,7 @@ class Experiment:
         self,
         provider,
         prometheus: PrometheusClient,
-        namespace: str,
+        metrics_namespaces: list[str],
         logs_dir: Path,
         run_id: int,
         measured: bool,
@@ -107,7 +107,7 @@ class Experiment:
             LOGGER.exception("Run %s failed", run_id)
 
         end = utc_now()
-        metrics = prometheus.collect_namespace_metrics(namespace=namespace, start=start, end=end)
+        metrics = prometheus.collect_namespaces_metrics(namespaces=metrics_namespaces, start=start, end=end)
         duration = (end - start).total_seconds()
 
         result = BenchmarkResult(
@@ -122,7 +122,7 @@ class Experiment:
             avg_memory_usage=metrics.avg_memory_usage,
             max_memory_usage=metrics.max_memory_usage,
             pod_restart_count=metrics.pod_restart_count,
-            namespace=namespace,
+            namespace=",".join(metrics_namespaces),
             logs_path=str(logs_path),
             error_message=error_message,
         )
@@ -135,3 +135,7 @@ class Experiment:
         if self.config.results.use_run_directories:
             return self.config.results.output_dir / "runs" / experiment_id
         return self.config.results.output_dir
+
+    def _metrics_namespaces(self) -> list[str]:
+        system = self.config.get_ci_system(self.tool_name)
+        return system.metrics_namespaces or [system.namespace]

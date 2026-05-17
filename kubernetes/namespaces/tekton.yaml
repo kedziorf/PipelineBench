@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pipelinebench-tekton
+  labels:
+    app.kubernetes.io/name: pipelinebench-tekton
+    pipelinebench.io/component: ci-system
