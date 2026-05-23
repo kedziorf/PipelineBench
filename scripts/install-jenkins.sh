@@ -7,7 +7,6 @@ CONTEXT="kind-$CLUSTER_NAME"
 kubectl config use-context "$CONTEXT"
 kubectl apply -f kubernetes/namespaces/jenkins.yaml
 kubectl apply -f kubernetes/ci-systems/jenkins/rbac.yaml
-kubectl apply -f kubernetes/ci-systems/jenkins/sample-workload-configmap.yaml
 kubectl apply -f kubernetes/ci-systems/jenkins/jenkinsfile-configmap.yaml
 
 helm repo add jenkins https://charts.jenkins.io >/dev/null

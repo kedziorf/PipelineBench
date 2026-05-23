@@ -26,6 +26,16 @@ class MonitoringSettings:
 
 
 @dataclass(frozen=True)
+class GiteaSettings:
+    namespace: str
+    external_url: str
+    internal_url: str
+    repository_owner: str
+    repository_name: str
+    username: str
+
+
+@dataclass(frozen=True)
 class ResultsSettings:
     output_dir: Path
     use_run_directories: bool
@@ -43,6 +53,7 @@ class CISystemSettings:
     provider: str
     deployment_method: str
     metrics_namespaces: list[str] = field(default_factory=list)
+    timeout_seconds: int | None = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +61,7 @@ class PipelineBenchConfig:
     base_dir: Path
     experiment: ExperimentSettings
     monitoring: MonitoringSettings
+    gitea: GiteaSettings
     results: ResultsSettings
     ci_systems: list[CISystemSettings]
 
@@ -67,6 +79,7 @@ def load_config(path: Path) -> PipelineBenchConfig:
 
     experiment = ExperimentSettings(**raw["experiment"])
     monitoring = MonitoringSettings(**raw["monitoring"])
+    gitea = GiteaSettings(**raw["gitea"])
     results_raw = raw["results"]
     results = ResultsSettings(
         output_dir=(config_path.parent / results_raw["output_dir"]).resolve(),
@@ -82,6 +95,7 @@ def load_config(path: Path) -> PipelineBenchConfig:
         base_dir=config_path.parent.resolve(),
         experiment=experiment,
         monitoring=monitoring,
+        gitea=gitea,
         results=results,
         ci_systems=ci_systems,
     )

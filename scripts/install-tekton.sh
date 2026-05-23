@@ -14,7 +14,6 @@ kubectl -n tekton-pipelines wait deployment --all --for=condition=Available --ti
 
 kubectl apply -f kubernetes/namespaces/tekton.yaml
 kubectl apply -f kubernetes/ci-systems/tekton/rbac.yaml
-kubectl apply -f kubernetes/ci-systems/tekton/sample-workload-configmap.yaml
 kubectl apply -f kubernetes/ci-systems/tekton/pipeline.yaml
 
 echo "Tekton installed and PipelineBench Tekton resources applied."

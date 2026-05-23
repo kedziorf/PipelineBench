@@ -1,0 +1,13 @@
+resources:
+  - name: sample-app
+    type: git
+    source:
+      uri: ((repo_uri))
+      branch: main
+
+jobs:
+  - name: sample-app
+    plan:
+      - get: sample-app
+      - task: benchmark
+        file: sample-app/ci/concourse/task.yml

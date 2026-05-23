@@ -1,0 +1,38 @@
+steps:
+  fetch-source:
+    image: python:3.12-slim
+    environment:
+      SAMPLE_APP_DIR: /woodpecker/src
+    commands:
+      - find "$SAMPLE_APP_DIR" -maxdepth 3 -type f | sort
+
+  unit-tests:
+    image: python:3.12-slim
+    commands:
+      - python3 -m pip install --user -r requirements.txt
+      - PYTHONPATH="$PWD" python3 -m unittest discover -s tests
+
+  cpu-benchmark:
+    image: python:3.12-slim
+    commands:
+      - python3 benchmark/cpu_task.py
+
+  memory-benchmark:
+    image: python:3.12-slim
+    commands:
+      - python3 benchmark/memory_task.py
+
+  docker-build-check:
+    image: python:3.12-slim
+    commands:
+      - |
+        if command -v docker >/dev/null 2>&1; then
+          docker build -t "pipelinebench/sample-app:woodpecker-${CI_PIPELINE_NUMBER:-0}" .
+        else
+          echo "Docker CLI is not available in this Woodpecker step; skipping image build."
+        fi
+
+  observation-hold:
+    image: python:3.12-slim
+    commands:
+      - sleep "${PIPELINEBENCH_OBSERVATION_HOLD_SECONDS:-20}"

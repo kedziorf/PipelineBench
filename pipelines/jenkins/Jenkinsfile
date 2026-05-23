@@ -17,29 +17,6 @@ spec:
       command:
         - cat
       tty: true
-      volumeMounts:
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/requirements.txt
-          subPath: requirements.txt
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/src/app.py
-          subPath: app.py
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/tests/test_app.py
-          subPath: test_app.py
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/benchmark/cpu_task.py
-          subPath: cpu_task.py
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/benchmark/memory_task.py
-          subPath: memory_task.py
-        - name: sample-workload
-          mountPath: /workspace/workloads/sample-app/Dockerfile
-          subPath: Dockerfile
-  volumes:
-    - name: sample-workload
-      configMap:
-        name: pipelinebench-sample-workload
 """
     }
   }
@@ -50,13 +27,41 @@ spec:
 
   environment {
     SAMPLE_APP_DIR = '/workspace/workloads/sample-app'
+    PIPELINEBENCH_REPO_ARCHIVE_URL = 'http://gitea-http.pipelinebench-gitea.svc.cluster.local:3000/filip/sample-app/archive/main.zip'
   }
 
   stages {
     stage('Checkout') {
       steps {
-        echo "PipelineBench workload mounted from Kubernetes ConfigMap. RUN_ID=${params.RUN_ID}"
-        sh 'find /workspace/workloads/sample-app -maxdepth 3 -type f | sort'
+        echo "Fetching PipelineBench workload from local Gitea. RUN_ID=${params.RUN_ID}"
+        sh '''
+          python3 - <<'PY_FETCH'
+import io
+import os
+import shutil
+import urllib.request
+import zipfile
+
+target = os.environ["SAMPLE_APP_DIR"]
+shutil.rmtree(target, ignore_errors=True)
+os.makedirs(target, exist_ok=True)
+with urllib.request.urlopen(os.environ["PIPELINEBENCH_REPO_ARCHIVE_URL"], timeout=30) as response:
+    payload = response.read()
+with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+    prefix = archive.namelist()[0].split("/")[0] + "/"
+    for member in archive.infolist():
+        if member.is_dir():
+            continue
+        rel = member.filename[len(prefix):]
+        if not rel:
+            continue
+        destination = os.path.join(target, rel)
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        with archive.open(member) as source, open(destination, "wb") as output:
+            shutil.copyfileobj(source, output)
+PY_FETCH
+          find "$SAMPLE_APP_DIR" -maxdepth 3 -type f | sort
+        '''
       }
     }
 

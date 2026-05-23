@@ -21,6 +21,14 @@ workload:
   path: "../workloads/sample-app"
   docker_image_name: "pipelinebench/sample-app"
 
+gitea:
+  namespace: "pipelinebench-gitea"
+  external_url: "http://localhost:30082"
+  internal_url: "http://gitea-http.pipelinebench-gitea.svc.cluster.local:3000"
+  repository_owner: "filip"
+  repository_name: "sample-app"
+  username: "filip"
+
 ci_systems:
   - name: "jenkins"
     enabled: true
@@ -37,13 +45,28 @@ ci_systems:
       - "pipelinebench-tekton"
     provider: "tekton"
     deployment_method: "manifests"
-  - name: "circleci"
+  - name: "concourse"
     enabled: true
-    namespace: "pipelinebench-circleci"
+    namespace: "pipelinebench-concourse"
     metrics_namespaces:
-      - "pipelinebench-circleci"
-    provider: "circleci"
-    deployment_method: "local-kubernetes-job"
+      - "pipelinebench-concourse"
+    provider: "concourse"
+    deployment_method: "helm"
+  - name: "gitea-actions"
+    enabled: true
+    namespace: "pipelinebench-gitea-actions"
+    metrics_namespaces:
+      - "pipelinebench-gitea-actions"
+    provider: "gitea-actions"
+    deployment_method: "gitea-act-runner"
+  - name: "woodpecker"
+    enabled: true
+    namespace: "pipelinebench-woodpecker"
+    metrics_namespaces:
+      - "pipelinebench-woodpecker"
+    provider: "woodpecker"
+    deployment_method: "helm-kubernetes-backend"
+    timeout_seconds: 300
 
 results:
   output_dir: "../results"

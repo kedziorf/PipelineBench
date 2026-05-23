@@ -1,6 +1,6 @@
 # Metrics
 
-PipelineBench exports these fields:
+PipelineBench exports these fields for each measured run:
 
 - `tool_name`
 - `run_id`
@@ -16,6 +16,8 @@ PipelineBench exports these fields:
 - `namespace`
 - `logs_path`
 - `error_message`
+
+Warmup runs are executed before measured runs but are not exported to `processed/results.csv` or `raw/results.json`.
 
 ## Summary Outputs
 
@@ -50,3 +52,9 @@ Metric availability depends on the installed monitoring chart and Kubernetes dis
 CPU and memory are collected with Prometheus range queries from the recorded pipeline start time to end time. Restart counts use a windowed `increase(...)` query sized to the actual run duration.
 
 Some providers use more than one namespace. Jenkins uses one namespace for controller and agents. Tekton uses `tekton-pipelines` for controllers and `pipelinebench-tekton` for benchmark `PipelineRun` pods, so the runner supports provider-specific `metrics_namespaces` and aggregates them into one row.
+
+## Interpreting Shared Infrastructure
+
+Shared Gitea is not included in provider metrics by default. This means Gitea Actions and Woodpecker measurements focus on their runner/server namespaces, while common source-control overhead is kept outside the comparison.
+
+If a research question needs end-to-end forge overhead, add `pipelinebench-gitea` to a provider's `metrics_namespaces` explicitly and document that change in the result notes.

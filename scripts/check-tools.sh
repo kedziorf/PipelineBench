@@ -31,6 +31,7 @@ check_command helm "Install Helm: https://helm.sh/docs/intro/install/"
 check_command python3 "Install Python 3.12+ in WSL."
 check_command curl "Install curl, for example: sudo apt-get install -y curl"
 check_command jq "Install jq, for example: sudo apt-get install -y jq"
+check_command git "Install git, for example: sudo apt-get install -y git"
 
 if command -v python3 >/dev/null 2>&1; then
   python3 - <<'PY'

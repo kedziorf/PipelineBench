@@ -3,10 +3,13 @@ set -euo pipefail
 
 TOOL="${1:-jenkins}"
 
-if [ "$TOOL" != "jenkins" ] && [ "$TOOL" != "tekton" ] && [ "$TOOL" != "circleci" ]; then
-  echo "Supported providers: jenkins, tekton, circleci"
-  exit 1
-fi
+case "$TOOL" in
+  jenkins|tekton|concourse|gitea-actions|woodpecker) ;;
+  *)
+    echo "Supported providers: jenkins, tekton, concourse, gitea-actions, woodpecker"
+    exit 1
+    ;;
+esac
 
 if [ "$TOOL" = "jenkins" ]; then
   export JENKINS_URL="${JENKINS_URL:-http://localhost:8080}"
